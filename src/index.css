@@ -60,9 +60,41 @@ button:focus-visible {
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    color: #ededed;
   }
   button {
     background-color: #f9f9f9;
   }
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 
+               'Segoe UI', 'Roboto', 'Oxygen',
+               'Ubuntu', 'Cantarell', 'Fira Sans', 
+               'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  text-align: center;
+}
+
+code {
+  font-family: source-code-pro, Menlo, 
+               Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/*formatting for links in the hamburger menu*/
+a {
+  color: white;
+  text-decoration: none;
+}
+
+/*removes bullet points from line items in the All Members section*/
+li {
+  list-style: none;
 }

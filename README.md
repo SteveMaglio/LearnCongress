@@ -1,50 +1,5 @@
-# React + TypeScript + Vite
+# Welcome to LearnCongress
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a personal project I started working on in Early 2025. I wanted to get more comfortable with web development, but also create a platform to allow people to become more politically literate. The idea of this project stemmed from a conversation with my brother who recently started working for a congressperson, and he wanted an easy way to study the names and faces of the people he would be meeting every day. The first idea was to create a Tinder-style swipe gamemode where you are presented with a stack of Congress members, and you can swipe on categories like **Party they belong to**, **State they represent**, **# of terms served**, etc. Then, the idea became more fully formed to include other gamemodes like "Guess Who?", a statistics page, and even a way to track certain congresspeople in the news through our site. I quickly realized it could be equal parts `game` and `source of truth`. Through the Congressional API, we can easily access legislation that these members are voting for, like bills, amendments, congressional hearings, etc. By exposing this plainly on our site, I think it would be an easy way to access important information about our federal government and allow us to understand things for ourselves that the news might put a spin on.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+I think recent events have demonstrated how valuable our vote can be, and how important it is to be educated on who we vote for and what our vote will stand for. The goal of this site is to reduce disinformation, increase transparency by providing access to federal information, and promote a more scrutinous mindset about our government.

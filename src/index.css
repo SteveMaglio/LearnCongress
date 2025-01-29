@@ -98,3 +98,10 @@ a {
 li {
   list-style: none;
 }
+
+.img {
+  object-fit: contain;
+  width: 100px;
+  height: 100px;
+  filter: url('#filter-radius');
+}

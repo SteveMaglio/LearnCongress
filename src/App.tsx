@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { FaUsers, FaBars } from "react-icons/fa";
+import AllMembers from './pages/AllMembers.tsx'
+import axios from "axios";
 
-function App() {
-  const [count, setCount] = useState(0)
+
+const Sidebar = ({ isOpen, toggleMenu }: { isOpen: boolean; toggleMenu: () => void }) => {
+  return (
+    <div className={`h-screen bg-gray-800 text-white p-4 transition-all duration-300 ${isOpen ? "w-64" : "w-16"} flex flex-col`}> 
+      <button onClick={toggleMenu} className="p-2 mb-4 flex items-center">
+        <FaBars className="text-white text-2xl" />
+      </button>
+      {isOpen && (
+        <ul>
+          <li className="mb-2">
+            <Link to="/" className="flex items-center p-2 hover:bg-gray-700 rounded">
+              <FaUsers className="mr-2" /> All Members
+            </Link>
+          </li>
+        </ul>
+      )}
+    </div>
+  );
+};
+
+const App = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      <div className="flex h-screen">
+        <Sidebar isOpen={menuOpen} toggleMenu={toggleMenu} />
+        <div className={`p-4 transition-all duration-300 flex-1 ${menuOpen ? "ml-64" : "ml-16"}`}> 
+          <Routes>
+            <Route path="/" element={<AllMembers />} />
+          </Routes>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    </Router>
+  );
+};
 
-export default App
+export default App;

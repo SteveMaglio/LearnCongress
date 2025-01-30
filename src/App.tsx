@@ -10,9 +10,9 @@ import axios from "axios";
 
 const Sidebar = ({ isOpen, toggleMenu }: { isOpen: boolean; toggleMenu: () => void }) => {
   return (
-    <div className={`h-screen bg-white text-black p-4 transition-all duration-300 ${isOpen ? "w-64" : "w-16"} flex flex-col`}> 
+    <div className={`h-screen text-white p-4 transition-all duration-300 ${isOpen ? "w-64" : "w-16"} flex flex-col`}> 
       <button onClick={toggleMenu} className="p-2 mb-4 flex items-center">
-        <FaBars className="text-white text-2xl" />
+        <FaBars className="text-white" />
       </button>
       {isOpen && (
         <ul>

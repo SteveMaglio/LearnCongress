@@ -4,7 +4,7 @@ import { FaUsers, FaBars,  } from "react-icons/fa";
 import { BsBarChartLineFill } from "react-icons/bs";
 import { ImSearch } from "react-icons/im";
 import { MdSwipe } from "react-icons/md";
-import AllMembers from './pages/AllMembers.tsx';
+import Swipe from '../src/pages/Swipe';
 import axios from "axios";
 
 
@@ -16,11 +16,6 @@ const Sidebar = ({ isOpen, toggleMenu }: { isOpen: boolean; toggleMenu: () => vo
       </button>
       {isOpen && (
         <ul>
-          <li className="mb-2">
-            <Link to="/allmembers" className="flex items-center p-2 hover:bg-gray-700 rounded">
-              <FaUsers className="mr-2" /> All Members
-            </Link>
-          </li>
           <li className="mb-2">
             <Link to="/swipe" className="flex items-center p-2 hover:bg-gray-700 rounded">
               <MdSwipe className="mr-2" /> Swipe
@@ -55,10 +50,9 @@ const App = () => {
         <Sidebar isOpen={menuOpen} toggleMenu={toggleMenu} />
         <div className={`p-4 transition-all duration-300 flex-1 ${menuOpen ? "ml-64" : "ml-16"}`}> 
           <Routes>
-            <Route path="/allmembers" element={<AllMembers />} />
-            <Route path="/swipe" element={<AllMembers />} />
-            <Route path="/guesswho" element={<AllMembers />} />
-            <Route path="/stats" element={<AllMembers />} />
+            <Route path="/swipe" element={<Swipe />} />
+            <Route path="/guesswho" element={<Swipe />} />
+            <Route path="/stats" element={<Swipe />} />
           </Routes>
         </div>
       </div>

@@ -1,0 +1,16 @@
+name: Schedule Supabase Function
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Runs at midnight UTC
+
+jobs:
+  call_function:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -X POST "$SUPABASE_URL/functions/v1/updateMembers" \
+               -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"

@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { fetchData, addMembers, getMemberSponsoredLegislation } from "../utils/apiHelper";
+import fetchData from "../utils/apiHelper";
 
 const Swipe = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [sponsoredLegislation, setSponsoredLegislation] = useState<any | null>(null);
 
@@ -21,34 +20,34 @@ const Swipe = () => {
   // State for the current question type
   const [questionType, setQuestionType] = useState<"party" | "state" | "name">("party");
 
+  const startingNumMembers = 100
+
   useEffect(() => {
-    const url = "https://api.congress.gov/v3/member?limit=100&currentMember=true&format=json";
-    fetchInitialData(url);
+    const fetchMembers = async () => {
+      try {
+        const members = await fetchData(0, startingNumMembers);
+        setData(members);
+      } catch (err) {
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMembers();
   }, []);
 
   useEffect(() => {
     if (data.length > 0 && data[currentIndex]) {
       const currentMember = data[currentIndex];
-      getMemberSponsoredLegislation(currentMember.bioguideId).then(setSponsoredLegislation);
+      //setSponsoredLegislation(currentMember.sponsoredLegislation || null);
     }
   }, [currentIndex, data]);
 
-  const fetchInitialData = async (url: string) => {
-    try {
-      const { members, nextPageUrl } = await fetchData(url);
-      const enrichedMembers = await addMembers(members);
-      setData(enrichedMembers);
-      setNextPageUrl(nextPageUrl);
-    } catch (err) {
-      setError("Failed to fetch data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleVote = (party: string) => {
     const currentMember = data[currentIndex];
-    if (questionType === "party" && party === currentMember.partyName) {
+    console.log("VOTED: " + party + " FOR " + currentMember.party)
+    if (questionType === "party" && party === currentMember.party) {
       setScore(prevScore => prevScore + 1);
     }
     showNextMember();
@@ -64,56 +63,37 @@ const Swipe = () => {
 
   const handleNameAnswer = (name: string) => {
     const currentMember = data[currentIndex];
-    
-    // Log to debug the current member's name
-    console.log('User guessed the name:', name);
-    console.log('Actual member name:', currentMember.additionalInfo.directOrderName);
-  
-    // Check if directOrderName is defined before calling toLowerCase
-    if (questionType === "name" && currentMember.additionalInfo.directOrderName) {
-      if (name.toLowerCase() === currentMember.additionalInfo.directOrderName.toLowerCase()) {
-        console.log("Correct! adding to your score");
-        setScore(prevScore => prevScore + 1);
-      }
-      else {
-        console.log('incorrect name guessed: ' + name);
-      }
-    } else {
-      console.error('directOrderName is undefined or not available');
+    if (questionType === "name" && currentMember.directOrderName?.toLowerCase() === name.toLowerCase()) {
+      setScore(prevScore => prevScore + 1);
     }
-  
     showNextMember();
   };
-  
 
   const showNextMember = () => {
-    setSponsoredLegislation(null);
-    if (currentIndex + 2 >= data.length && nextPageUrl) {
+    if (currentIndex + 1 >= data.length) {
       setLoading(true);
-      fetchInitialData(nextPageUrl);
+      fetchData().then(members => {
+        setData(members);
+        setCurrentIndex(0);
+      });
+    } else {
+      setCurrentIndex(prevIndex => prevIndex + 1);
     }
-    setData(prevData => {
-      const updatedData = [...prevData];
-      updatedData.splice(currentIndex, 1);
-      return updatedData;
-    });
-    setCurrentIndex(prevIndex => (prevIndex + 1) % data.length);
-    updateQuestionType(); // Cycle to a new question type after each answer
+    updateQuestionType();
   };
 
   const updateQuestionType = () => {
-    const enabledTypes: ("party" | "state" | "name")[] = []; // Explicitly type the array
-  
+    const enabledTypes: ("party" | "state" | "name")[] = [];
+
     if (partyEnabled) enabledTypes.push("party");
     if (stateEnabled) enabledTypes.push("state");
     if (nameEnabled) enabledTypes.push("name");
-  
+
     if (enabledTypes.length > 0) {
       const randomIndex = Math.floor(Math.random() * enabledTypes.length);
-      setQuestionType(enabledTypes[randomIndex]); // This is now type-safe
+      setQuestionType(enabledTypes[randomIndex]);
     }
   };
-  
 
   useEffect(() => {
     updateQuestionType();
@@ -141,6 +121,10 @@ const Swipe = () => {
     randomStates.push(currentMember.state);
     return randomStates.sort(() => 0.5 - Math.random());
   };
+
+  if (loading && data.length === 0) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (!currentMember) return <p>No members available.</p>;
 
   return (
     <div className="p-4 flex-1 overflow-hidden">
@@ -197,15 +181,17 @@ const Swipe = () => {
             <div className="flex flex-col w-full">
 
               {questionType !== "name" && (
-                <p className="font-semibold text-lg">{currentMember.additionalInfo.directOrderName} </p>
+                <p className="font-semibold text-lg">{currentMember.directOrderName} </p>
               )}
               <div>
-                <p>{currentMember.additionalInfo.bioguideId}</p>
+                <p>{currentMember.bioguideId}</p>
                 <p className="text-gray-600">{currentTermLocation}</p>
               </div>
 
-              {questionType !== "state" && (
-                <p className="text-sm text-gray-500">{currentMember.state} - District {currentMember.district}</p>
+              {questionType !== "state" && currentMember.district && (
+                <p className="text-sm text-gray-500">
+                  {currentMember.state} - District {currentMember.district}
+                </p>
               )}
             </div>
           </div>
@@ -242,7 +228,7 @@ const Swipe = () => {
                 ))}
               </div>
             )}
-{nameEnabled && questionType === "name" && (
+            {nameEnabled && questionType === "name" && (
               <div className="flex justify-center">
                 <input
                   type="text"

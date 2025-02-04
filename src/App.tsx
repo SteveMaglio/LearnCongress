@@ -7,7 +7,6 @@ import { MdSwipe } from "react-icons/md";
 import Swipe from '../src/pages/Swipe';
 import axios from "axios";
 
-
 const Sidebar = ({ isOpen, toggleMenu }: { isOpen: boolean; toggleMenu: () => void }) => {
   return (
     <div className={`h-screen text-white p-4 transition-all duration-300 ${isOpen ? "w-64" : "w-16"} flex flex-col`}> 
@@ -50,14 +49,16 @@ const App = () => {
         <Sidebar isOpen={menuOpen} toggleMenu={toggleMenu} />
         <div className={`p-4 transition-all duration-300 flex-1 ${menuOpen ? "ml-64" : "ml-16"}`}> 
           <Routes>
-            <Route path="/swipe" element={<Swipe />} />
-            <Route path="/guesswho" element={<Swipe />} />
-            <Route path="/stats" element={<Swipe />} />
+            <Route path="/swipe" element={<Swipe/>} />
+            <Route path="/guesswho" element={<Swipe/>} />
+            <Route path="/stats" element={<Swipe/>} />
           </Routes>
         </div>
       </div>
     </Router>
   );
 };
+
+
 
 export default App;

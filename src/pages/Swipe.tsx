@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchData, addMembers, getMemberSponsoredLegislation } from "../api/apiHelper";
+import { fetchData, addMembers, getMemberSponsoredLegislation } from "../utils/apiHelper";
 
 const Swipe = () => {
   const [data, setData] = useState<any[]>([]);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import fetchData from "../utils/apiHelper";
+import { start } from "repl";
 
 const Swipe = () => {
   const [data, setData] = useState<any[]>([]);
@@ -20,12 +21,14 @@ const Swipe = () => {
   // State for the current question type
   const [questionType, setQuestionType] = useState<"party" | "state" | "name">("party");
 
-  const startingNumMembers = 100
+  const membersPerRequest = 250; // Initial number of members to fetch
+  const [memberRequestOffset, setMemberRequestOffset] = useState(membersPerRequest); // Tracks how many members we've fetched
+
 
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const members = await fetchData(0, startingNumMembers);
+        const members = await fetchData(0, membersPerRequest);
         setData(members);
       } catch (err) {
         setError("Failed to fetch data");
@@ -72,7 +75,8 @@ const Swipe = () => {
   const showNextMember = () => {
     if (currentIndex + 1 >= data.length) {
       setLoading(true);
-      fetchData().then(members => {
+      fetchData(memberRequestOffset, membersPerRequest).then(members => {
+        setMemberRequestOffset(memberRequestOffset + membersPerRequest);
         setData(members);
         setCurrentIndex(0);
       });

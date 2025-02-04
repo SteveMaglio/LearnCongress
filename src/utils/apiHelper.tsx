@@ -20,11 +20,26 @@ const fetchData = async (offset: number, limit: number) => {
       throw new Error(error.message);
     }
 
-    return data || [];
+    if (data) {
+      // Shuffle the data array randomly
+      return shuffleArray(data);
+    }
+
+    return [];
   } catch (err) {
     console.error("Failed to fetch data:", err);
     throw new Error("Failed to fetch data");
   }
+};
+
+// Utility function to shuffle an array randomly (Fisher-Yates / Knuth shuffle algorithm)
+const shuffleArray = (array: any[]) => {
+  let shuffledArray = [...array]; // Create a copy to avoid mutating the original array
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1)); // Get a random index
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]]; // Swap elements
+  }
+  return shuffledArray;
 };
 
 export default fetchData;

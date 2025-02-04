@@ -13,4 +13,4 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           curl -X POST "$SUPABASE_URL/functions/v1/updateMembers" \
-               -H "Authorization: Bearer $VITE_SUPABASE_SERVICE_ROLE_KEY"
+               -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"

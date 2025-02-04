@@ -7,6 +7,9 @@ jobs:
   call_function:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Supabase URL
+        run: |
+          echo "Supabase URL: $VITE_SUPABASE_URL"
       - name: Call Supabase Edge Function
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

@@ -6,23 +6,30 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const CONGRESS_API_KEY = Deno.env.get("CONGRESS_API_KEY");
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !CONGRESS_API_KEY) {
-  throw new Error("Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or CONGRESS_API_KEY");
+  throw new Error(
+    "Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or CONGRESS_API_KEY",
+  );
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const LIMIT = 250;
-const BASE_URL = `https://api.congress.gov/v3/member?limit=${LIMIT}&api_key=${CONGRESS_API_KEY}`;
+const BASE_URL =
+  `https://api.congress.gov/v3/member?limit=${LIMIT}&api_key=${CONGRESS_API_KEY}`;
 const MEMBER_DETAILS_URL = "https://api.congress.gov/v3/member/";
 
 // Fetch additional member details by bioguideId
 async function fetchMemberDetails(bioguideId: string) {
-  const url = `${MEMBER_DETAILS_URL}${bioguideId}?format=json&api_key=${CONGRESS_API_KEY}`;
+  const url =
+    `${MEMBER_DETAILS_URL}${bioguideId}?format=json&api_key=${CONGRESS_API_KEY}`;
   console.log(`Fetching details for member: ${bioguideId}`);
 
   const response = await fetch(url);
   if (!response.ok) {
-    console.error(`Error fetching details for ${bioguideId}:`, response.statusText);
+    console.error(
+      `Error fetching details for ${bioguideId}:`,
+      response.statusText,
+    );
     return null;
   }
 
@@ -56,7 +63,7 @@ async function fetchAndStoreMembers(url: string) {
     if (!details) continue;
 
     formattedMembers.push({
-      bioguideId: member.bioguideId || null, 
+      bioguideId: member.bioguideId || null,
       firstName: details.firstName || null,
       lastName: details.lastName || null,
       directOrderName: details.directOrderName || null,
@@ -68,8 +75,8 @@ async function fetchAndStoreMembers(url: string) {
       addressInformation: details.addressInformation || null,
       depiction: member.depiction || null,
       terms: member.terms || null,
-      birthYear: details.birthYear || null, 
-      deathYear: details.deathYear || null, 
+      birthYear: details.birthYear || null,
+      deathYear: details.deathYear || null,
       currentMember: details.currentMember || false,
       updated_at: new Date().toISOString(),
     });
@@ -78,7 +85,7 @@ async function fetchAndStoreMembers(url: string) {
   if (formattedMembers.length > 0) {
     const { error } = await supabase
       .from("members")
-      .upsert(formattedMembers, { onConflict: ["id"] });
+      .upsert(formattedMembers, { onConflict: ["bioguideId"] });
 
     if (error) {
       console.error("Error inserting members:", error.message);
@@ -86,8 +93,11 @@ async function fetchAndStoreMembers(url: string) {
     }
   }
 
-  if (members.length === LIMIT && data.pagination?.next) {
-    return fetchAndStoreMembers(`${data.pagination.next}&api_key=${CONGRESS_API_KEY}`);
+  if (members.length >= LIMIT - 1 && data.pagination?.next) {
+    console.log(`recursing on pagination url: ${data.pagination.next}`);
+    return fetchAndStoreMembers(
+      `${data.pagination.next}&api_key=${CONGRESS_API_KEY}`,
+    );
   }
 
   console.log("All members updated successfully.");
@@ -99,9 +109,9 @@ async function fetchAndStoreMembers(url: string) {
   try {
     const result = await fetchAndStoreMembers(BASE_URL);
     console.log("Function completed:", result);
-    Deno.exit(0); 
+    Deno.exit(0);
   } catch (error) {
     console.error("Function execution failed:", error);
-    Deno.exit(1); 
+    Deno.exit(1);
   }
 })();

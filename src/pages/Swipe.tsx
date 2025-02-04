@@ -28,7 +28,7 @@ const Swipe = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const members = await fetchData(0, membersPerRequest);
+        const members = await fetchData(0, membersPerRequest, true);
         setData(members);
       } catch (err) {
         setError("Failed to fetch data");
@@ -75,7 +75,7 @@ const Swipe = () => {
   const showNextMember = () => {
     if (currentIndex + 1 >= data.length) {
       setLoading(true);
-      fetchData(memberRequestOffset, membersPerRequest).then(members => {
+      fetchData(memberRequestOffset, membersPerRequest, true).then(members => {
         setMemberRequestOffset(memberRequestOffset + membersPerRequest);
         setData(members);
         setCurrentIndex(0);

@@ -8,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
  * Fetch member data from Supabase
  * @returns Fetched members
  */
-const fetchData = async (offset: number, limit: number) => {
+const fetchData = async (offset: number, limit: number, shuffle: boolean = false) => {
   try {
     const { data, error, status } = await supabase
       .from('members')
@@ -20,9 +20,12 @@ const fetchData = async (offset: number, limit: number) => {
       throw new Error(error.message);
     }
 
-    if (data) {
+    if (data && shuffle) {
       // Shuffle the data array randomly
       return shuffleArray(data);
+    }
+    else if (data) {
+      return data;
     }
 
     return [];

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_KEY = import.meta.env.VITE_CONGRESS_API_KEY;
+const API_KEY = process.env.CONGRESS_API_KEY;
 const BASE_URL = "https://api.congress.gov/v3";
 
 /**
@@ -64,7 +64,6 @@ const getLegislationInfo = async (url: string) => {
   export const getMemberSponsoredLegislation = async (bioguideId: string) => {
     try {
       const response = await axios.get(`${BASE_URL}/member/${bioguideId}/sponsored-legislation?api_key=${API_KEY}`);
-      console.log(response.data);
       const legislationList = response.data?.sponsoredLegislation || []; // Handle cases where legislation is missing
   
       // Fetch additional info for each piece of legislation in parallel

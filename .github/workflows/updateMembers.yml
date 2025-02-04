@@ -1,7 +1,8 @@
-name: Schedule Supabase Function
+name: Update Supabase tables
 on:
   schedule:
-    - cron: "0 1 * * *"  # runs the script to update the DB contents @ 8pm EST (daily)
+    - cron: "0 5 * * *"  # runs the script daily at 6:26 UTC (1:26 AM EST)
+  workflow_dispatch:  
 
 jobs:
   call_function:
@@ -9,8 +10,8 @@ jobs:
     steps:
       - name: Call Supabase Edge Function
         env:
-          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           curl -X POST "$SUPABASE_URL/functions/v1/updateMembers" \
-               -H "Authorization: Bearer $VITE_SUPABASE_SERVICE_ROLE_KEY"
+               -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"

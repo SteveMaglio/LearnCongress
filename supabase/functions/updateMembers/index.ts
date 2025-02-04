@@ -6,7 +6,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const CONGRESS_API_KEY = Deno.env.get("CONGRESS_API_KEY");
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !CONGRESS_API_KEY) {
-  throw new Error("Missing required environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_SERVICE_ROLE_KEY, or VITE_CONGRESS_API_KEY");
+  throw new Error("Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or CONGRESS_API_KEY");
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);

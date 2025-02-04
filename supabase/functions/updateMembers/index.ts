@@ -1,13 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
-import { config } from "https://deno.land/x/dotenv/mod.ts";
 
-// Load environment variables from .env file
-console.log("Current working directory:", Deno.cwd());
-
-const env = config();
-const SUPABASE_URL = env.VITE_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = env.VITE_SUPABASE_SERVICE_ROLE_KEY;
-const CONGRESS_API_KEY = env.VITE_CONGRESS_API_KEY;
+// Access environment variables directly using Deno.env.get
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const CONGRESS_API_KEY = Deno.env.get("CONGRESS_API_KEY");
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !CONGRESS_API_KEY) {
   throw new Error("Missing required environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_SERVICE_ROLE_KEY, or VITE_CONGRESS_API_KEY");
@@ -30,10 +26,7 @@ async function fetchMemberDetails(bioguideId: string) {
     return null;
   }
 
-  // Wait for the response to be parsed as JSON and then log it
   const data = await response.json();
-  //console.log("Fetched member details:", data);
-
   return data.member;
 }
 
@@ -60,7 +53,7 @@ async function fetchAndStoreMembers(url: string) {
   let formattedMembers = [];
   for (const member of members) {
     const details = await fetchMemberDetails(member.bioguideId);
-    if (!details) continue; // Skip if failed to fetch
+    if (!details) continue;
 
     formattedMembers.push({
       bioguideId: member.bioguideId || null, 
@@ -72,9 +65,9 @@ async function fetchAndStoreMembers(url: string) {
       partyHistory: details.partyHistory || null,
       state: member.state || null,
       district: member.district?.toString() || null,
-      addressInformation: details.addressInformation || null, // Store full address info as JSON
-      depiction: member.depiction || null, // Store image details as JSON
-      terms: member.terms || null, // Store term details as JSON
+      addressInformation: details.addressInformation || null,
+      depiction: member.depiction || null,
+      terms: member.terms || null,
       birthYear: details.birthYear || null, 
       deathYear: details.deathYear || null, 
       currentMember: details.currentMember || false,
@@ -82,7 +75,6 @@ async function fetchAndStoreMembers(url: string) {
     });
   }
 
-  // Insert into Supabase
   if (formattedMembers.length > 0) {
     const { error } = await supabase
       .from("members")
@@ -94,7 +86,6 @@ async function fetchAndStoreMembers(url: string) {
     }
   }
 
-  // Handle pagination
   if (members.length === LIMIT && data.pagination?.next) {
     return fetchAndStoreMembers(`${data.pagination.next}&api_key=${CONGRESS_API_KEY}`);
   }
@@ -108,9 +99,9 @@ async function fetchAndStoreMembers(url: string) {
   try {
     const result = await fetchAndStoreMembers(BASE_URL);
     console.log("Function completed:", result);
-    Deno.exit(0); // Exit the process successfully after completion
+    Deno.exit(0); 
   } catch (error) {
     console.error("Function execution failed:", error);
-    Deno.exit(1); // Exit the process with an error code if failed
+    Deno.exit(1); 
   }
 })();

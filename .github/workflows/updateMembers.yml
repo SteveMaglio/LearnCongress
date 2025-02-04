@@ -1,7 +1,7 @@
-name: Schedule Supabase Function
+name: Update Supabase tables
 on:
   schedule:
-    - cron: "0 1 * * *"  # runs the script to update the DB contents @ 8pm EST (daily)
+    - cron: "0 5 * * *"  # runs the script to update the DB contents @ 12am EST (daily)
 
 jobs:
   call_function:

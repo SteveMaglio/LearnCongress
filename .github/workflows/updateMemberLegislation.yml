@@ -1,4 +1,4 @@
-name: Update members table
+name: Update legislation tables
 on:
   schedule:
     - cron: "0 5 * * *"  # runs the script daily at 6:26 UTC (1:26 AM EST)
@@ -13,5 +13,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          curl -X POST "$SUPABASE_URL/functions/v1/updateMembers" \
+          curl -X POST "$SUPABASE_URL/functions/v1/updateMemberLegislation" \
                -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"

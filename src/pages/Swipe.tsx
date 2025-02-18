@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { fetchData, addMembers, getMemberSponsoredLegislation } from "../utils/apiHelper";
+import { getRandomMembers, getMemberSponsoredLegislation } from "../utils/apiHelper";
+import { useAuth } from "../utils/authContext";
+import { supabase } from "../utils/supabase";
 
 const Swipe = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
+  const [numMembersPerQuery, setNumMembersPerQuery] = useState<number | null>(25);
   const [score, setScore] = useState(0);
   const [sponsoredLegislation, setSponsoredLegislation] = useState<any | null>(null);
 
@@ -21,10 +23,26 @@ const Swipe = () => {
   // State for the current question type
   const [questionType, setQuestionType] = useState<"party" | "state" | "name">("party");
 
+  const { getUserUUID } = useAuth();
+  const userUUID = getUserUUID();
+
   useEffect(() => {
-    const url = "https://api.congress.gov/v3/member?limit=100&currentMember=true&format=json";
-    fetchInitialData(url);
+    fetchMembersData();
   }, []);
+  
+  const fetchMembersData = async () => {
+    try {
+      const members = await getRandomMembers(numMembersPerQuery!);
+      setData(members);
+      //setNextPage(nextPage); // Store the next page number
+    } catch (err) {
+      setError("Failed to fetch data");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
 
   useEffect(() => {
     if (data.length > 0 && data[currentIndex]) {
@@ -33,32 +51,22 @@ const Swipe = () => {
     }
   }, [currentIndex, data]);
 
-  const fetchInitialData = async (url: string) => {
-    try {
-      const { members, nextPageUrl } = await fetchData(url);
-      const enrichedMembers = await addMembers(members);
-      setData(enrichedMembers);
-      setNextPageUrl(nextPageUrl);
-    } catch (err) {
-      setError("Failed to fetch data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVote = (party: string) => {
+  const handlePartyAnswer = (party: string) => {
     const currentMember = data[currentIndex];
-    if (questionType === "party" && party === currentMember.partyName) {
-      setScore(prevScore => prevScore + 1);
+
+    if (questionType === "party" && party === currentMember.party) {
+      handleCorrectAnswer();
     }
+    insertUserGuess(questionType, party, currentMember.party);
     showNextMember();
   };
 
   const handleStateAnswer = (state: string) => {
     const currentMember = data[currentIndex];
     if (questionType === "state" && state === currentMember.state) {
-      setScore(prevScore => prevScore + 1);
+      handleCorrectAnswer()
     }
+    insertUserGuess(questionType, state, currentMember.state);
     showNextMember();
   };
 
@@ -66,31 +74,53 @@ const Swipe = () => {
     const currentMember = data[currentIndex];
     
     // Log to debug the current member's name
-    console.log('User guessed the name:', name);
-    console.log('Actual member name:', currentMember.additionalInfo.directOrderName);
   
     // Check if directOrderName is defined before calling toLowerCase
-    if (questionType === "name" && currentMember.additionalInfo.directOrderName) {
-      if (name.toLowerCase() === currentMember.additionalInfo.directOrderName.toLowerCase()) {
-        console.log("Correct! adding to your score");
-        setScore(prevScore => prevScore + 1);
-      }
-      else {
-        console.log('incorrect name guessed: ' + name);
+    if (questionType === "name" && currentMember.directOrderName) {
+      if (name.toLowerCase() === currentMember.directOrderName.toLowerCase()) {
+        handleCorrectAnswer()
       }
     } else {
       console.error('directOrderName is undefined or not available');
     }
-  
+    insertUserGuess(questionType, name, currentMember.directOrderName);
     showNextMember();
   };
-  
+
+  const handleCorrectAnswer = () => {
+    setScore(prevScore => prevScore + 1);
+  }
+
+
+  const insertUserGuess = async (questionType: string,  input: string,  expected: string) => {
+    var isCorrect = input.toLowerCase() === expected.toLowerCase();
+    console.log(isCorrect);
+    console.log(userUUID);
+    const { data, error } = await supabase
+      .from("userGuesses")
+      .insert([{ 
+        user_uuid: userUUID,  // Foreign key reference to the users table
+        questionType: questionType,
+        input: input, 
+        expected: expected,
+        isCorrect: isCorrect,
+        memberID: currentMember.id,
+        created_at: new Date().toISOString() // Optional timestamp
+      }]);
+
+    if (error) {
+      console.error("Error inserting user guess:", error);
+    } else {
+      console.log("User guess inserted successfully:", data);
+    }
+  };
 
   const showNextMember = () => {
+    
     setSponsoredLegislation(null);
-    if (currentIndex + 2 >= data.length && nextPageUrl) {
+    if (currentIndex + 2 >= data.length) {
       setLoading(true);
-      fetchInitialData(nextPageUrl);
+      fetchMembersData();
     }
     setData(prevData => {
       const updatedData = [...prevData];
@@ -197,10 +227,10 @@ const Swipe = () => {
             <div className="flex flex-col w-full">
 
               {questionType !== "name" && (
-                <p className="font-semibold text-lg">{currentMember.additionalInfo.directOrderName} </p>
+                <p className="font-semibold text-lg">{currentMember.directOrderName} </p>
               )}
               <div>
-                <p>{currentMember.additionalInfo.bioguideId}</p>
+                <p>{currentMember.bioguideId}</p>
                 <p className="text-gray-600">{currentTermLocation}</p>
               </div>
 
@@ -215,16 +245,22 @@ const Swipe = () => {
             {partyEnabled && questionType === "party" && (
               <div className="flex justify-center space-x-4">
                 <button
-                  onClick={() => handleVote("Democratic")}
+                  onClick={() => handlePartyAnswer("Democratic")}
                   className="bg-blue-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-700 transition"
                 >
                   Democrat
                 </button>
                 <button
-                  onClick={() => handleVote("Republican")}
+                  onClick={() => handlePartyAnswer("Republican")}
                   className="bg-red-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-red-700 transition"
                 >
                   Republican
+                </button>
+                <button
+                  onClick={() => handlePartyAnswer("Independent")}
+                  className="bg-white text-white py-2 px-4 rounded-md shadow-md hover:bg-white transition"
+                >
+                  Independent
                 </button>
               </div>
             )}

@@ -14,8 +14,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !CONGRESS_API_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const LIMIT = 250;
-const BASE_URL =
-  `https://api.congress.gov/v3/member?limit=${LIMIT}&api_key=${CONGRESS_API_KEY}`;
+const BASE_URL = `https://api.congress.gov/v3/member?limit=${LIMIT}&offset=0&api_key=${CONGRESS_API_KEY}`;
 const MEMBER_DETAILS_URL = "https://api.congress.gov/v3/member/";
 
 // Fetch additional member details by bioguideId
@@ -93,11 +92,10 @@ async function fetchAndStoreMembers(url: string) {
     }
   }
 
+  //weird case where the first members request returns 249, then the follow up ones return 250
   if (members.length >= LIMIT - 1 && data.pagination?.next) {
-    console.log(`recursing on pagination url: ${data.pagination.next}`);
-    return fetchAndStoreMembers(
-      `${data.pagination.next}&api_key=${CONGRESS_API_KEY}`,
-    );
+    console.log(`recursing on pagination url ${data.pagination.next}`)
+    return fetchAndStoreMembers(`${data.pagination.next}&api_key=${CONGRESS_API_KEY}`);
   }
 
   console.log("All members updated successfully.");

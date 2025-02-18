@@ -1,9 +1,10 @@
+import { createClient } from "@supabase/supabase-js";
 
-import { createClient } from '@supabase/supabase-js';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-export default supabase;
-        
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase URL and Anon Key are required but not provided.");
+  }
+  
+  export const supabase = createClient(supabaseUrl, supabaseAnonKey);

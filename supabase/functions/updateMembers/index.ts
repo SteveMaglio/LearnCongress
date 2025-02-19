@@ -15,7 +15,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const LIMIT = 250;
 const BASE_URL =
-  `https://api.congress.gov/v3/member?limit=${LIMIT}&api_key=${CONGRESS_API_KEY}`;
+  `https://api.congress.gov/v3/member?limit=${LIMIT}&currentMember=true&api_key=${CONGRESS_API_KEY}`;
 const MEMBER_DETAILS_URL = "https://api.congress.gov/v3/member/";
 
 const MAX_CONCURRENT_REQUESTS = 5; // Limit concurrent requests
@@ -23,14 +23,14 @@ const RETRY_DELAY_MS = 500; // Initial retry delay
 const MAX_RETRIES = 3; // Retry up to 3 times
 
 async function fetchMemberDetails(
-  bioguideId: string,
+  bioguide_id: string,
   retries = 0,
 ): Promise<any> {
   const url =
-    `${MEMBER_DETAILS_URL}${bioguideId}?format=json&api_key=${CONGRESS_API_KEY}`;
+    `${MEMBER_DETAILS_URL}${bioguide_id}?format=json&api_key=${CONGRESS_API_KEY}`;
 
   try {
-    console.log(`Fetching details for member: ${bioguideId}`);
+    console.log(`Fetching details for member: ${bioguide_id}`);
     const response = await fetch(url, {
       method: "GET",
       /*
@@ -46,12 +46,12 @@ async function fetchMemberDetails(
       console.error(`Error fetching details (${response.status}): ${url}`);
       if (response.status === 520 && retries < MAX_RETRIES) {
         console.log(
-          `Retrying ${bioguideId} in ${RETRY_DELAY_MS * (retries + 1)}ms...`,
+          `Retrying ${bioguide_id} in ${RETRY_DELAY_MS * (retries + 1)}ms...`,
         );
         await new Promise((resolve) =>
           setTimeout(resolve, RETRY_DELAY_MS * (retries + 1))
         );
-        return fetchMemberDetails(bioguideId, retries + 1);
+        return fetchMemberDetails(bioguide_id, retries + 1);
       }
       return null;
     }
@@ -59,7 +59,7 @@ async function fetchMemberDetails(
     const data = await response.json();
     return data.member || null;
   } catch (error) {
-    console.error(`Network error for ${bioguideId}:`, error);
+    console.error(`Network error for ${bioguide_id}:`, error);
     return null;
   }
 }
@@ -107,29 +107,29 @@ async function fetchAndStoreMembers(url: string) {
 
   // Format the data (without removing null values)
   const formattedMembers = memberDetails.map(({ member, details }) => ({
-    bioguideId: member.bioguideId ?? null,
-    firstName: details?.firstName ?? null,
-    lastName: details?.lastName ?? null,
-    directOrderName: details?.directOrderName ?? null,
-    invertedOrderName: details?.invertedOrderName ?? null,
+    bioguide_id: member.bioguideId ?? null,
+    first_name: details?.firstName ?? null,
+    last_name: details?.lastName ?? null,
+    direct_order_name: details?.directOrderName ?? null,
+    inverted_order_name: details?.invertedOrderName ?? null,
     party: member.partyName ?? "Unknown",
-    partyHistory: details?.partyHistory ?? null,
+    party_history: details?.partyHistory ?? null,
     state: member.state ?? null,
     district: member.district?.toString() ?? null,
-    addressInformation: details?.addressInformation ?? null,
+    address_information: details?.addressInformation ?? null,
     depiction: member.depiction, //trigger function prevents manually added images for members missing a depiction from being reset to null
-    sponsoredLegislation: details?.sponsoredLegislation ?? null,
-    cosponsoredLegislation: details?.cosponsoredLegislation ?? null,
+    sponsored_legislation: details?.sponsoredLegislation ?? null,
+    cosponsored_legislation: details?.cosponsoredLegislation ?? null,
     terms: member.terms ?? null,
-    birthYear: details?.birthYear ?? null,
-    deathYear: details?.deathYear ?? null,
-    currentMember: details?.currentMember ?? false,
+    birth_year: details?.birthYear ?? null,
+    death_year: details?.deathYear ?? null,
+    current_member: details?.currentMember ?? false,
     updated_at: new Date().toISOString(),
   }));
 
   // Insert in batches
   const { error } = await supabase.from("members").upsert(formattedMembers, {
-    onConflict: ["bioguideId"],
+    onConflict: ["bioguide_id"],
   });
 
   if (error) {
